@@ -53,7 +53,7 @@ class SignUpPage extends StatelessWidget {
             // Sign Up Button
             ElevatedButton(
               onPressed: () {
-                // Implement your sign-up logic here
+                // yo pani back end ko lagi baki xa
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

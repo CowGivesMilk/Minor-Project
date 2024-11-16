@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'sign_in_page.dart';  // Import the SignInPage
-import 'sign_up_page.dart';  // Import the SignUpPage
-
+import 'sign_up_page.dart';
 void main() {
   runApp(const SahayatriApp());
 }

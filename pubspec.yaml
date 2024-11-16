@@ -16,6 +16,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: "^0.14.1"  # Add this line to include the flutter_launcher_icons dependency
 
 flutter:
   uses-material-design: true
@@ -23,3 +24,8 @@ flutter:
   # Add assets for the app
   assets:
     - assets/bus.png
+
+flutter_icons:
+  android: true           # Set to true to generate icons for Android
+  ios: false              # Set to false if you don't need iOS icons
+  image_path: "assets/icon/final.png"  # Path to your app icon image

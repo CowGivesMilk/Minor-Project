@@ -1,8 +1,44 @@
-// sign_in_page.dart
 import 'package:flutter/material.dart';
+import 'api_service.dart'; // Added this import
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget { // Changed from StatelessWidget to StatefulWidget
   const SignInPage({super.key});
+
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  final _emailController = TextEditingController(); // Added controllers
+  final _passwordController = TextEditingController();
+
+  bool _isLoading = false; // Added a loading state
+
+  // Function to handle sign-in
+  void _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await ApiService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+      // Navigate or show success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Welcome, ${response['user']['username']}!')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +53,7 @@ class SignInPage extends StatelessWidget {
           children: [
             // Email Field
             TextField(
+              controller: _emailController, // Added controller
               decoration: InputDecoration(
                 labelText: 'Email',
                 prefixIcon: const Icon(Icons.email),
@@ -29,6 +66,7 @@ class SignInPage extends StatelessWidget {
             const SizedBox(height: 20),
             // Password Field
             TextField(
+              controller: _passwordController, // Added controller
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock),
@@ -41,18 +79,17 @@ class SignInPage extends StatelessWidget {
             const SizedBox(height: 30),
             // Sign In Button
             ElevatedButton(
-              onPressed: () {
-                // Yo baki xa back end ko lagi
-              },
+              onPressed: _isLoading ? null : _signIn, // Updated onPressed
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text(
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white) // Loading indicator
+                  : const Text(
                 'Sign In',
                 style: TextStyle(fontSize: 18),
               ),

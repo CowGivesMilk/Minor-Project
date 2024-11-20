@@ -1,8 +1,46 @@
-// sign_up_page.dart
 import 'package:flutter/material.dart';
+import 'api_service.dart'; // Added this import
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget { // Changed to StatefulWidget
   const SignUpPage({super.key});
+
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final _nameController = TextEditingController(); // Added controllers
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _isLoading = false; // Loading state
+
+  // Function to handle sign-up
+  void _signUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final message = await ApiiService.signup(
+        _nameController.text,
+        _emailController.text,
+        _passwordController.text,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      Navigator.pushNamed(context, '/signin'); // Navigate to Sign-In page
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +55,7 @@ class SignUpPage extends StatelessWidget {
           children: [
             // Name Field
             TextField(
+              controller: _nameController, // Added controller
               decoration: InputDecoration(
                 labelText: 'Name',
                 prefixIcon: const Icon(Icons.person),
@@ -28,6 +67,7 @@ class SignUpPage extends StatelessWidget {
             const SizedBox(height: 20),
             // Email Field
             TextField(
+              controller: _emailController, // Added controller
               decoration: InputDecoration(
                 labelText: 'Email',
                 prefixIcon: const Icon(Icons.email),
@@ -40,6 +80,7 @@ class SignUpPage extends StatelessWidget {
             const SizedBox(height: 20),
             // Password Field
             TextField(
+              controller: _passwordController, // Added controller
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock),
@@ -52,18 +93,17 @@ class SignUpPage extends StatelessWidget {
             const SizedBox(height: 30),
             // Sign Up Button
             ElevatedButton(
-              onPressed: () {
-                // yo pani back end ko lagi baki xa
-              },
+              onPressed: _isLoading ? null : _signUp, // Updated onPressed
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text(
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white) // Loading indicator
+                  : const Text(
                 'Sign Up',
                 style: TextStyle(fontSize: 18),
               ),

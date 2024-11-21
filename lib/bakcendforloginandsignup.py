@@ -21,6 +21,7 @@ def get_db_connection():
 def login():
     # Parse JSON data from the request
     data = request.json
+    username = data.get('username')
     email = data.get('email')
     password = data.get('password')
 

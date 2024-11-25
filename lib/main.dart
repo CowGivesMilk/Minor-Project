@@ -20,7 +20,7 @@ class SahayatriApp extends StatelessWidget {
         '/': (context) => const SahayatriHome(),
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
-        '/dashboard': (context) => const DashboardPage(), // Dashboard route
+        '/dashboard': (context) => const Dashboard(), // Dashboard route
       },
       theme: ThemeData(
         primarySwatch: Colors.green,

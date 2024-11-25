@@ -1,25 +1,28 @@
 name: sahayatri
 description: "A new Flutter project."
+
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: '>=3.4.0 <4.0.0'
 
 dependencies:
-  flutter_map: ^7.0.2
-  latlong2: ^0.9.1
   flutter:
     sdk: flutter
+  flutter_map: ^7.0.2 # Updated to the latest version of flutter_map
+  latlong2: ^0.9.1 # Latest version compatible with flutter_map
+  geolocator: ^13.0.2 # Latest version of geolocator
+  permission_handler: ^11.3.1 # Latest version for permission handling
   cupertino_icons: ^1.0.6
   http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0  # Downgraded to be compatible with Dart 3.4.3
-  flutter_launcher_icons: "^0.14.1"  # Added for generating app icons
+  flutter_lints: ^4.0.0  # Compatible with Dart 3.x
+  flutter_launcher_icons: "^0.14.1"  # For generating app icons
 
 flutter:
   uses-material-design: true

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dashboard.dart'; // Import the Dashboard page
 import 'sign_in_page.dart';  // Import the SignInPage
-import 'sign_up_page.dart';
+import 'sign_up_page.dart';  // Import the SignUpPage
+
 void main() {
   runApp(const SahayatriApp());
 }
@@ -18,6 +20,7 @@ class SahayatriApp extends StatelessWidget {
         '/': (context) => const SahayatriHome(),
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
+        '/dashboard': (context) => const DashboardPage(), // Dashboard route
       },
       theme: ThemeData(
         primarySwatch: Colors.green,
@@ -26,8 +29,27 @@ class SahayatriApp extends StatelessWidget {
   }
 }
 
-class SahayatriHome extends StatelessWidget {
+class SahayatriHome extends StatefulWidget {
   const SahayatriHome({super.key});
+
+  @override
+  _SahayatriHomeState createState() => _SahayatriHomeState();
+}
+
+class _SahayatriHomeState extends State<SahayatriHome> {
+  int _tapCount = 0;  // Counter for bus logo taps
+
+  // Handle bus logo tap
+  void _handleBusLogoTap() {
+    setState(() {
+      _tapCount++;
+    });
+
+    if (_tapCount >= 5) {
+      // Navigate to the Dashboard if clicked 5 times
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,17 +87,20 @@ class SahayatriHome extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            Image.asset(
-              'assets/bus.png', // Ensure this path matches your pubspec.yaml
-              height: 200,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
-                  Icons.directions_bus,
-                  size: 200,
-                  color: Colors.green.shade200,
-                );
-              },
+            GestureDetector(
+              onTap: _handleBusLogoTap,  // Handle tap on the bus logo
+              child: Image.asset(
+                'assets/bus.png', // Ensure this path matches your pubspec.yaml
+                height: 200,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.directions_bus,
+                    size: 200,
+                    color: Colors.green.shade200,
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 50),
             // Sign In Button
@@ -88,8 +113,7 @@ class SahayatriHome extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -114,8 +138,7 @@ class SahayatriHome extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

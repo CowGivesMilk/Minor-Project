@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -27,15 +29,16 @@ class Dashboard extends StatelessWidget {
             UserAccountsDrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF32CD32)),
               accountName: const Text(
-                'John Doe',
+                'Nimesh Poudel',
                 style: TextStyle(color: Colors.white),
-              ), // Replace with the actual username
+              ),
               accountEmail: const Text(
-                'johndoe@example.com',
+                'n@p.com',
                 style: TextStyle(color: Colors.white70),
-              ), // Replace with the user's email
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: AssetImage('assets/profile_picture.png'), // Replace with the actual profile picture
+              ),
+              currentAccountPicture: const CircleAvatar(
+                backgroundImage: AssetImage(
+                    'assets/profile_picture.png'), // Replace with the actual profile picture
               ),
             ),
             ListTile(
@@ -67,14 +70,20 @@ class Dashboard extends StatelessWidget {
           // First Section: Map
           Expanded(
             flex: 5, // 50% of the screen
-            child: Container(
-              color: Colors.grey[200], // Placeholder color
-              child: const Center(
-                child: Text(
-                  'Map goes here',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter:
+                    LatLng(27.7172, 85.3240), // Kathmandu coordinates
+                initialZoom: 15.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
+                  userAgentPackageName: 'com.example.app',
                 ),
-              ), // Replace this with OpenStreetMap integration
+              ],
             ),
           ),
           // Second Section: Location options

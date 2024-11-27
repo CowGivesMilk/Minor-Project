@@ -15,13 +15,13 @@ dependencies:
   latlong2: ^0.9.1 # Latest version compatible with flutter_map
   geolocator: ^13.0.2 # Latest version of geolocator
   permission_handler: ^11.3.1 # Latest version for permission handling
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.8
   http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0  # Compatible with Dart 3.x
+  flutter_lints: ^5.0.0
   flutter_launcher_icons: "^0.14.1"  # For generating app icons
 
 flutter:

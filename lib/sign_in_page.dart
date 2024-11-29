@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'sign_up_page.dart'; // Import the SignUpPage
+
 import 'api_service.dart';
 
 class SignInPage extends StatefulWidget {
@@ -40,6 +42,7 @@ class _SignInPageState extends State<SignInPage> {
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, // Align children to stretch
           children: [
             TextField(
               controller: _emailController,
@@ -70,6 +73,26 @@ class _SignInPageState extends State<SignInPage> {
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('Sign In', style: TextStyle(fontSize: 18)),
+            ),
+            const SizedBox(height: 20),
+            // Added text for navigating to the SignUpPage
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignUpPage()), // Navigate to SignUpPage
+                  );
+                },
+                child: const Text(
+                  "Don't have an Account?",
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

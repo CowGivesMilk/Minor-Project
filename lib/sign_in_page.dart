@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'sign_up_page.dart'; // Import the SignUpPage
-
+import 'dashboard.dart'; // Import the Dashboard page
 import 'api_service.dart';
 
 class SignInPage extends StatefulWidget {
@@ -15,23 +15,33 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
+  // Function to handle sign-in logic
   void _signIn() async {
-    setState(() => _isLoading = true);
+    setState(() => _isLoading = true); // Show loading indicator
     try {
+      // Attempt login via the ApiService
       final response = await ApiService.login(
         _emailController.text,
         _passwordController.text,
       );
+
+      // If login is successful, show a success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Welcome, ${response['username']}!')),
+        const SnackBar(content: Text('Login Successful!')),
       );
-      // Handle navigation or other actions on success
+
+      // Navigate to the Dashboard
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Dashboard()), // Replace the current page with Dashboard
+      );
     } catch (error) {
+      // If login fails, show an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login Failed: $error')),
       );
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isLoading = false); // Stop the loading indicator
     }
   }
 
@@ -44,6 +54,7 @@ class _SignInPageState extends State<SignInPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch, // Align children to stretch
           children: [
+            // Email TextField
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -53,6 +64,7 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
             const SizedBox(height: 20),
+            // Password TextField
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -63,19 +75,20 @@ class _SignInPageState extends State<SignInPage> {
               obscureText: true,
             ),
             const SizedBox(height: 30),
+            // Sign In Button
             ElevatedButton(
-              onPressed: _isLoading ? null : _signIn,
+              onPressed: _isLoading ? null : _signIn, // Disable button when loading
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
               child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: Colors.white) // Show loading spinner
                   : const Text('Sign In', style: TextStyle(fontSize: 18)),
             ),
             const SizedBox(height: 20),
-            // Added text for navigating to the SignUpPage
+            // Text for navigating to the SignUpPage
             Center(
               child: GestureDetector(
                 onTap: () {

@@ -29,6 +29,7 @@ flutter:
 
   # Add assets for the app
   assets:
+    - assets/map.png
     - assets/bus.png
 
 flutter_icons:

@@ -1,55 +1,161 @@
-import 'data_structures.dart';
-import 'dart:collection';
+// Updated `findRoute` algorithm to match the desired output format.
+import 'dsa.dart';
 
-List<List<Node>> findPaths(List<Route> routes, Node startNode, Node endNode) {
-  // Adjacency list to store graph representation
-  Map<Node, List<Node>> graph = {};
+class RouteFinder {
+  Map<String, Node> allNodes;
+  Set<Bus> allBuses;
+  Map<String, double> edgeDistances;
 
-  // Build the graph from the routes
-  for (var route in routes) {
-    Node? current = route.head;
-    if (current == null) continue;
+  RouteFinder(this.allNodes, this.allBuses, this.edgeDistances);
 
-    do {
-      if (!graph.containsKey(current)) {
-        graph[current] = [];
-      }
+  List<dynamic> findRoute(double latFrom, double longFrom, double latTo, double longTo) {
+    List<dynamic> result = [];
 
-      // Add edge to the next node in the route
-      if (current.next != null) {
-        graph[current]!.add(current.next!);
-      }
-      current = current.next;
-    } while (current != route.head);
-  }
+    // Find the nearest nodes to start and end locations
+    Node? startNode = allNodes[latlongToString(latFrom, longFrom)] ?? findNearestNode(latFrom, longFrom, allNodes);
+    Node? endNode = allNodes[latlongToString(latTo, longTo)] ?? findNearestNode(latTo, longTo, allNodes);
 
-  // Function to perform BFS and find all paths
-  List<List<Node>> bfs(Node start, Node end) {
-    List<List<Node>> result = [];
-    Queue<List<Node>> queue = Queue();
-    queue.add([start]);
+    if (startNode == null || endNode == null) {
+      print('Start or End node not found.');
+      return [];
+    }
 
-    while (queue.isNotEmpty) {
-      List<Node> path = queue.removeFirst();
-      Node currentNode = path.last;
+    if (startNode != allNodes[latlongToString(latFrom, longFrom)]) {
+      result.add(Action.walk);
+      result.add(startNode);
+    }
 
-      if (currentNode == end) {
-        result.add(path);
-        continue;
-      }
+    // Shortest path search including bus actions
+    List<dynamic>? pathWithActions = dijkstraWithActions(startNode, endNode);
 
-      for (Node neighbor in graph[currentNode] ?? []) {
-        if (!path.contains(neighbor)) {
-          List<Node> newPath = List.from(path);
-          newPath.add(neighbor);
-          queue.add(newPath);
-        }
-      }
+    if (pathWithActions == null) {
+      print('No path found between start and end nodes.');
+      return [];
+    }
+
+    result.addAll(pathWithActions);
+
+    if (endNode != allNodes[latlongToString(latTo, longTo)]) {
+      result.add(Action.walk);
     }
 
     return result;
   }
 
-  // Get all paths from start to end
-  return bfs(startNode, endNode);
+  List<dynamic>? dijkstraWithActions(Node start, Node end) {
+    Map<Node, double> distances = {};
+    Map<Node, Node?> previous = {};
+    Map<Node, Bus?> usedBus = {};
+    PriorityQueue<MapEntry<Node, double>> queue = PriorityQueue(
+      (a, b) => a.value.compareTo(b.value),
+    );
+
+    for (Node node in allNodes.values) {
+      distances[node] = double.infinity;
+      previous[node] = null;
+      usedBus[node] = null;
+    }
+
+    distances[start] = 0;
+    queue.add(MapEntry(start, 0));
+
+    while (!queue.isEmpty) {
+      Node current = queue.removeFirst().key;
+
+      if (current == end) {
+        List<dynamic> pathWithActions = [];
+        Node? step = end;
+        Bus? currentBus;
+
+        while (step != null) {
+          if (previous[step] != null && usedBus[step] != currentBus) {
+            if (currentBus != null) {
+              pathWithActions.insert(0, currentBus);
+              pathWithActions.insert(0, Action.changeBus);
+            }
+            currentBus = usedBus[step];
+          }
+          pathWithActions.insert(0, step);
+          step = previous[step];
+        }
+
+        if (currentBus != null) {
+          pathWithActions.insert(0, currentBus);
+          pathWithActions.insert(0, Action.getOnBus);
+        }
+
+        return pathWithActions;
+      }
+
+      for (Bus bus in current.busses) {
+        for (Node neighbor in bus.nodes) {
+          if (neighbor == current) continue;
+          String edgeKey = edgeStr(current.latitude, current.longitude, neighbor.latitude, neighbor.longitude);
+          double weight = edgeDistances[edgeKey] ?? haversine(current.latitude, current.longitude, neighbor.latitude, neighbor.longitude);
+
+          double alternativeDistance = distances[current]! + weight;
+
+          if (alternativeDistance < distances[neighbor]!) {
+            distances[neighbor] = alternativeDistance;
+            previous[neighbor] = current;
+            usedBus[neighbor] = bus;
+            queue.add(MapEntry(neighbor, alternativeDistance));
+          }
+        }
+      }
+    }
+
+    return null; // No path found
+  }
 }
+
+// Function to parse Excel file into List<Route>
+/*
+Future<List<dynamic>> parseExcelFile(String filePath) async {
+  var bytes = File(filePath).readAsBytesSync();
+  var excel = Excel.decodeBytes(bytes);
+  List<Route> routes = [];
+
+  for (var sheet in excel.tables.keys) {
+    var table = excel.tables[sheet]!;
+    if (table.rows.isEmpty) continue;
+
+    for (int col = 0; col < table.maxCols; col += 3) {
+      String? routeName = table.rows[0][col]?.value;
+      if (routeName == null) continue;
+
+      List<Node> nodes = [];
+      List<Edge> edges = [];
+
+      for (int row = 1; row < table.maxRows; row++) {
+        var nameCell = table.rows[row][col];
+        var latCell = table.rows[row][col + 1];
+        var lonCell = table.rows[row][col + 2];
+
+        if (nameCell == null || latCell == null || lonCell == null) continue;
+
+        String nodeName = nameCell.value.toString();
+        double latitude = double.tryParse(latCell.value.toString()) ?? 0.0;
+        double longitude = double.tryParse(lonCell.value.toString()) ?? 0.0;
+
+        Node node = Node(name: nodeName, latitude: latitude, longitude: longitude);
+        nodes.add(node);
+      }
+
+      // Create edges between consecutive nodes
+      for (int i = 0; i < nodes.length - 1; i++) {
+        Edge edge = Edge(from: nodes[i], to: nodes[i + 1]);
+        edge.distance = await computeDistance(nodes[i], nodes[i + 1]); // Async distance
+        edges.add(edge);
+      }
+
+      // Add Route
+      routes.add(Route(name: routeName, nodes: nodes, edges: edges));
+    }
+  }
+
+  return routes;
+}
+*/
+
+

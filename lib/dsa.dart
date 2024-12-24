@@ -121,9 +121,23 @@ String edgeStr(double lat1, double long1, double lat2, double long2) {
 }
 
 int parseNodes(Map<String, Node> allNodes, Set<Bus> allBuses, Map<String, Future<double>> edgesMap) {
-  String filePath = "assets/output_file.xlsx";
-  var bytes = File(filePath).readAsBytesSync();
-  var excel = Excel.decodeBytes(bytes);
+  String filePath = "/home/nimes/Minor-Project/assets/output_file.xlsx";
+  File file = File(filePath);
+  if(!file.existsSync()) {
+    print('File doesnot exist');
+    return -1;
+  }
+  var bytes = file.readAsBytesSync();
+  //print('${bytes.runtimeType}');
+  dynamic excel;
+  try {
+    excel = Excel.decodeBytes(bytes);
+    print('file decoded successfully');
+  } catch (e) {
+    //bytes.forEach(print);
+    print('Error decoding file: $e: E130');
+    return -1;
+  }
   var sheet = excel.tables['Sheet1'];
   if(sheet == null) {
     print('Sheet is empty.');
@@ -237,7 +251,7 @@ class RouteFinder {
     Node? endNode = allNodes[latlongToString(latTo, longTo)] ?? findNearestNode(latTo, longTo, allNodes);
 
     if (startNode == null || endNode == null) {
-      print('Start or End node not found.');
+      print('Start or End node not found. E240');  //E240
       return [];
     }
 
@@ -250,7 +264,7 @@ class RouteFinder {
     List<dynamic>? pathWithActions = dijkstraWithActions(startNode, endNode);
 
     if (pathWithActions == null) {
-      print('No path found between start and end nodes.');
+      print('No path found between start and end nodes. E253');  //E253
       return [];
     }
 
@@ -325,7 +339,7 @@ class RouteFinder {
         }
       }
     }
-
+    print('No path found');
     return null; // No path found
   }
 }
@@ -343,3 +357,22 @@ void printPath(List<dynamic> path) {
   }
 }
 
+int main() {
+  Map<String, Node> allNodes = {};
+  Set<Bus> allBuses = {};
+  Map<String, double> edgeDistances = {};
+  Map<String, Future<double>> edgesMap = {};
+  double latFrom = 27.732436;
+  double longFrom = 85.3081285;
+  double latTo = 27.7156689;
+  double longTo = 85.3982037;
+  var e = parseNodes(allNodes, allBuses, edgesMap);
+  if(e != 0) {
+    print('Something went wrong');
+    return -1;
+  }
+  List<dynamic> path = RouteFinder(allNodes, allBuses, edgeDistances).findRoute(latFrom, longFrom, latTo, longTo);
+  printPath(path);
+  print('Treminated Successfully');
+  return 0;
+}

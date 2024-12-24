@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart'; // For accessing current location
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
+
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  LatLng? currentLocation; // Coordinates for the current location
+  LatLng? finalDestination; // Coordinates for the final destination
+
+  final String currentLocationName = "Current Location"; // Static name for current location
+  final String finalDestinationName = "Final Destination"; // Static name for final destination
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF32CD32), // Green theme color
+        backgroundColor: const Color(0xFF32CD32),
         elevation: 0,
         leading: Builder(
           builder: (context) {
             return IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () {
-                Scaffold.of(context).openDrawer(); // Open burger menu
+                Scaffold.of(context).openDrawer();
               },
             );
           },
@@ -38,70 +48,88 @@ class Dashboard extends StatelessWidget {
                 style: TextStyle(color: Colors.white70),
               ),
               currentAccountPicture: const CircleAvatar(
-                backgroundImage: AssetImage(
-                    'assets/profile_picture.png'), // Replace with the actual profile picture
+                backgroundImage: AssetImage('assets/profile_picture.png'),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.support),
               title: const Text('Support'),
-              onTap: () {
-                // Navigate to Support page
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: const Icon(Icons.question_answer),
               title: const Text('FAQ'),
-              onTap: () {
-                // Navigate to FAQ page
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: const Icon(Icons.history),
               title: const Text('History'),
-              onTap: () {
-                // Navigate to History page
-              },
+              onTap: () {},
             ),
           ],
         ),
       ),
       body: Column(
         children: [
-          // First Section: Map
           Expanded(
-            flex: 5, // 50% of the screen
+            flex: 5,
             child: FlutterMap(
               options: MapOptions(
-                initialCenter:
-                LatLng(27.7172, 85.3240), // Kathmandu coordinates
+                initialCenter: LatLng(27.7172, 85.3240),
                 initialZoom: 15.0,
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                   subdomains: ['a', 'b', 'c'],
                   userAgentPackageName: 'com.example.app',
                 ),
+                if (currentLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: currentLocation!,
+                        width: 40.0,
+                        height: 40.0,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Colors.blue,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (finalDestination != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: finalDestination!,
+                        width: 40.0,
+                        height: 40.0,
+                        child: const Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
-          // Second Section: Location options
           Expanded(
-            flex: 5, // 50% of the screen
+            flex: 5,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Current Location Input
                   GestureDetector(
-                    onTap: () => _showLocationOptions(context, "Current Location"),
+                    onTap: () => _showLocationOptions(context, "current"),
                     child: TextField(
-                      enabled: false, // Disable direct input
+                      enabled: false,
                       decoration: InputDecoration(
-                        hintText: 'Current Location',
+                        hintText: currentLocationName, // Static current location name
                         filled: true,
                         fillColor: Colors.green[50],
                         border: OutlineInputBorder(
@@ -112,13 +140,12 @@ class Dashboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Final Destination Input
                   GestureDetector(
-                    onTap: () => _showLocationOptions(context, "Final Destination"),
+                    onTap: () => _showLocationOptions(context, "final"),
                     child: TextField(
-                      enabled: false, // Disable direct input
+                      enabled: false,
                       decoration: InputDecoration(
-                        hintText: 'Final Destination',
+                        hintText: finalDestinationName, // Static final destination name
                         filled: true,
                         fillColor: Colors.green[50],
                         border: OutlineInputBorder(
@@ -129,10 +156,19 @@ class Dashboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Submit Button
                   ElevatedButton(
                     onPressed: () {
-                      // Add navigation logic to calculate routes
+                      if (currentLocation != null && finalDestination != null) {
+                        // Logic to handle the journey start
+                        print(
+                            "Journey started from (${currentLocation!.latitude}, ${currentLocation!.longitude}) to (${finalDestination!.latitude}, ${finalDestination!.longitude})");
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please select both locations."),
+                          ),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF32CD32),
@@ -156,26 +192,43 @@ class Dashboard extends StatelessWidget {
     );
   }
 
-  // Method to show location options dialog
   void _showLocationOptions(BuildContext context, String locationType) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Choose $locationType'),
+          title: Text(
+              'Choose ${locationType == "current" ? "Current Location" : "Final Destination"}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: Image.asset(
-                  'assets/map.png', // Replace with the updated icon path
+                  'assets/map.png',
                   width: 24,
                   height: 24,
                 ),
                 title: const Text('Choose on Map'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // Logic to open map and let the user choose a location
+                  final selectedLocation = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MapPicker(
+                        currentLocation: currentLocation,
+                        finalDestination: finalDestination,
+                      ),
+                    ),
+                  );
+                  if (selectedLocation != null) {
+                    setState(() {
+                      if (locationType == "current") {
+                        currentLocation = selectedLocation;
+                      } else {
+                        finalDestination = selectedLocation;
+                      }
+                    });
+                  }
                 },
               ),
               ListTile(
@@ -183,7 +236,6 @@ class Dashboard extends StatelessWidget {
                 title: const Text('Search Location'),
                 onTap: () {
                   Navigator.pop(context);
-                  _showSearchLocation(context, locationType);
                 },
               ),
             ],
@@ -192,68 +244,104 @@ class Dashboard extends StatelessWidget {
       },
     );
   }
+}
 
-  // Method to show search location input dialog
-  void _showSearchLocation(BuildContext context, String locationType) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Search $locationType'),
-          content: TextField(
-            decoration: InputDecoration(
-              hintText: 'Enter $locationType',
-              filled: true,
-              fillColor: Colors.green[50],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onSubmitted: (value) {
-              Navigator.pop(context);
-              // Use the entered value for further processing
-            },
+class MapPicker extends StatefulWidget {
+  final LatLng? currentLocation;
+  final LatLng? finalDestination;
+
+  const MapPicker({
+    Key? key,
+    this.currentLocation,
+    this.finalDestination,
+  }) : super(key: key);
+
+  @override
+  State<MapPicker> createState() => _MapPickerState();
+}
+
+class _MapPickerState extends State<MapPicker> {
+  LatLng? selectedLocation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF32CD32),
+        title: const Text('Select Location'),
+      ),
+      body: FlutterMap(
+        options: MapOptions(
+          initialCenter: widget.currentLocation ??
+              widget.finalDestination ??
+              LatLng(27.7172, 85.3240),
+          initialZoom: 15.0,
+          onTap: (tapPosition, point) {
+            setState(() {
+              selectedLocation = point;
+            });
+          },
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            subdomains: ['a', 'b', 'c'],
+            userAgentPackageName: 'com.example.app',
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+          if (widget.currentLocation != null)
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: widget.currentLocation!,
+                  width: 40.0,
+                  height: 40.0,
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: Colors.blue,
+                    size: 40,
+                  ),
+                ),
+              ],
             ),
-          ],
-        );
-      },
+          if (widget.finalDestination != null)
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: widget.finalDestination!,
+                  width: 40.0,
+                  height: 40.0,
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+          if (selectedLocation != null)
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: selectedLocation!,
+                  width: 40.0,
+                  height: 40.0,
+                  child: const Icon(
+                    Icons.location_pin,
+                    color: Colors.orange,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pop(context, selectedLocation);
+        },
+        backgroundColor: const Color(0xFF32CD32),
+        child: const Icon(Icons.check),
+      ),
     );
-  }
-
-  // Method to get current location using Geolocator
-  Future<Position> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, request user to enable them
-      throw Exception('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, handle appropriately
-        throw Exception('Location permissions are denied.');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are permanently denied, handle appropriately
-      throw Exception('Location permissions are permanently denied.');
-    }
-
-    // Retrieve the current position
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
   }
 }

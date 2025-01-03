@@ -10,11 +10,11 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  LatLng? currentLocation; // Coordinates for the current location
-  LatLng? finalDestination; // Coordinates for the final destination
+  LatLng? currentLocation;
+  LatLng? finalDestination;
 
-  final String currentLocationName = "Current Location"; // Static name for current location
-  final String finalDestinationName = "Final Destination"; // Static name for final destination
+  final String currentLocationName = "Current Location";
+  final String finalDestinationName = "Final Destination";
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,7 @@ class _DashboardState extends State<Dashboard> {
                     child: TextField(
                       enabled: false,
                       decoration: InputDecoration(
-                        hintText: currentLocationName, // Static current location name
+                        hintText: currentLocationName,
                         filled: true,
                         fillColor: Colors.green[50],
                         border: OutlineInputBorder(
@@ -145,7 +145,7 @@ class _DashboardState extends State<Dashboard> {
                     child: TextField(
                       enabled: false,
                       decoration: InputDecoration(
-                        hintText: finalDestinationName, // Static final destination name
+                        hintText: finalDestinationName,
                         filled: true,
                         fillColor: Colors.green[50],
                         border: OutlineInputBorder(
@@ -159,7 +159,6 @@ class _DashboardState extends State<Dashboard> {
                   ElevatedButton(
                     onPressed: () {
                       if (currentLocation != null && finalDestination != null) {
-                        // Logic to handle the journey start
                         print(
                             "Journey started from (${currentLocation!.latitude}, ${currentLocation!.longitude}) to (${finalDestination!.latitude}, ${finalDestination!.longitude})");
                       } else {
@@ -193,6 +192,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _showLocationOptions(BuildContext context, String locationType) {
+    TextEditingController locationSearchController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
@@ -236,6 +236,30 @@ class _DashboardState extends State<Dashboard> {
                 title: const Text('Search Location'),
                 onTap: () {
                   Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Enter Location Name'),
+                        content: TextField(
+                          controller: locationSearchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter a location name',
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              print("Searched location: ${locationSearchController.text}");
+                              // Logic to convert text into LatLng can go here
+                            },
+                            child: const Text('Search'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
             ],

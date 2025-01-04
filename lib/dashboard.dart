@@ -3,7 +3,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:csv/csv.dart';
 
@@ -19,7 +18,11 @@ class _DashboardState extends State<Dashboard> {
   LatLng? finalDestination;
   final String currentLocationName = "Current Location";
   final String finalDestinationName = "Final Destination";
-  late List<String> locations = []; // List to store unique locations from the CSV file.
+  late Map<String, LatLng> locationCoordinates = {}; // Map to store locations and their coordinates.
+
+  // Controllers for the TextFields to show the selected location names.
+  TextEditingController currentLocationController = TextEditingController();
+  TextEditingController finalDestinationController = TextEditingController();
 
   @override
   void initState() {
@@ -30,20 +33,17 @@ class _DashboardState extends State<Dashboard> {
   Future<void> loadLocations() async {
     try {
       final csvData = await rootBundle.loadString('assets/Routes.csv');
-      final List<List<dynamic>> rowsAsListOfValues =
-      const CsvToListConverter().convert(csvData);
+      final List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter().convert(csvData);
 
-      // Use a Set to store unique locations
-      final Set<String> uniqueLocations = rowsAsListOfValues
-          .skip(1) // Skip the header row
-          .map((row) => row[0].toString().trim()) // Extract the first column
-          .toSet();
+      // Populate the map with location names and their coordinates.
+      for (var row in rowsAsListOfValues.skip(1)) {
+        final String locationName = row[0].toString().trim();
+        final double latitude = double.parse(row[1].toString());
+        final double longitude = double.parse(row[2].toString());
+        locationCoordinates[locationName] = LatLng(latitude, longitude);
+      }
 
-      setState(() {
-        locations = uniqueLocations.toList(); // Convert back to a list
-      });
-
-      print("Unique locations loaded: $locations"); // Debug: Print loaded locations
+      print("Locations loaded: $locationCoordinates"); // Debug: Print loaded locations
     } catch (error) {
       print('Error loading CSV: $error');
     }
@@ -55,47 +55,6 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF32CD32),
         elevation: 0,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFF32CD32)),
-              accountName:
-              const Text('Nimesh Poudel', style: TextStyle(color: Colors.white)),
-              accountEmail: const Text('n@p.com', style: TextStyle(color: Colors.white70)),
-              currentAccountPicture: const CircleAvatar(
-                backgroundImage: AssetImage('assets/profile_picture.png'),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.support),
-              title: const Text('Support'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.question_answer),
-              title: const Text('FAQ'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('History'),
-              onTap: () {},
-            ),
-          ],
-        ),
       ),
       body: Column(
         children: [
@@ -149,6 +108,7 @@ class _DashboardState extends State<Dashboard> {
                   GestureDetector(
                     onTap: () => _showLocationOptions(context, "current"),
                     child: TextField(
+                      controller: currentLocationController,
                       enabled: false,
                       decoration: InputDecoration(
                         hintText: currentLocationName,
@@ -165,6 +125,7 @@ class _DashboardState extends State<Dashboard> {
                   GestureDetector(
                     onTap: () => _showLocationOptions(context, "final"),
                     child: TextField(
+                      controller: finalDestinationController,
                       enabled: false,
                       decoration: InputDecoration(
                         hintText: finalDestinationName,
@@ -219,8 +180,7 @@ class _DashboardState extends State<Dashboard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title:
-          Text('Choose ${locationType == "current" ? "Current Location" : "Final Destination"}'),
+          title: Text('Choose ${locationType == "current" ? "Current Location" : "Final Destination"}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -246,8 +206,12 @@ class _DashboardState extends State<Dashboard> {
                     setState(() {
                       if (locationType == "current") {
                         currentLocation = selectedLocation;
+                        currentLocationController.text =
+                        "(${selectedLocation.latitude}, ${selectedLocation.longitude})";
                       } else {
                         finalDestination = selectedLocation;
+                        finalDestinationController.text =
+                        "(${selectedLocation.latitude}, ${selectedLocation.longitude})";
                       }
                     });
                   }
@@ -263,7 +227,7 @@ class _DashboardState extends State<Dashboard> {
                     builder: (context) {
                       return AlertDialog(
                         title: const Text('Enter Location Name'),
-                        content: TypeAheadFormField(
+                        content: TypeAheadFormField<String>(
                           textFieldConfiguration: TextFieldConfiguration(
                             controller: locationSearchController,
                             decoration: const InputDecoration(
@@ -271,14 +235,9 @@ class _DashboardState extends State<Dashboard> {
                             ),
                           ),
                           suggestionsCallback: (pattern) {
-                            final suggestions = locations.where(
-                                  (location) => location
-                                  .toLowerCase()
-                                  .contains(pattern.toLowerCase()),
-                            );
-                            print(
-                                "Suggestions for '$pattern': ${suggestions.toList()}"); // Debugging
-                            return suggestions;
+                            return locationCoordinates.keys
+                                .where((location) => location.toLowerCase().contains(pattern.toLowerCase()))
+                                .toList();
                           },
                           itemBuilder: (context, suggestion) {
                             return ListTile(
@@ -289,11 +248,11 @@ class _DashboardState extends State<Dashboard> {
                             Navigator.pop(context);
                             setState(() {
                               if (locationType == "current") {
-                                print("Selected Current Location: $suggestion");
-                                // Add logic to convert suggestion to LatLng.
+                                currentLocation = locationCoordinates[suggestion];
+                                currentLocationController.text = suggestion;
                               } else {
-                                print("Selected Final Destination: $suggestion");
-                                // Add logic to convert suggestion to LatLng.
+                                finalDestination = locationCoordinates[suggestion];
+                                finalDestinationController.text = suggestion;
                               }
                             });
                           },
@@ -311,7 +270,7 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-class MapPicker extends StatefulWidget {
+class MapPicker extends StatelessWidget {
   final LatLng? currentLocation;
   final LatLng? finalDestination;
 
@@ -322,13 +281,6 @@ class MapPicker extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MapPicker> createState() => _MapPickerState();
-}
-
-class _MapPickerState extends State<MapPicker> {
-  LatLng? selectedLocation;
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -337,13 +289,10 @@ class _MapPickerState extends State<MapPicker> {
       ),
       body: FlutterMap(
         options: MapOptions(
-          initialCenter:
-          widget.currentLocation ?? widget.finalDestination ?? LatLng(27.7172, 85.3240),
+          initialCenter: currentLocation ?? finalDestination ?? LatLng(27.7172, 85.3240),
           initialZoom: 15.0,
           onTap: (tapPosition, point) {
-            setState(() {
-              selectedLocation = point;
-            });
+            Navigator.pop(context, point);
           },
         ),
         children: [
@@ -352,47 +301,7 @@ class _MapPickerState extends State<MapPicker> {
             subdomains: ['a', 'b', 'c'],
             userAgentPackageName: 'com.example.app',
           ),
-          if (widget.currentLocation != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: widget.currentLocation!,
-                  width: 40.0,
-                  height: 40.0,
-                  child: const Icon(Icons.location_pin, color: Colors.blue, size: 40),
-                ),
-              ],
-            ),
-          if (widget.finalDestination != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: widget.finalDestination!,
-                  width: 40.0,
-                  height: 40.0,
-                  child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
-                ),
-              ],
-            ),
-          if (selectedLocation != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: selectedLocation!,
-                  width: 40.0,
-                  height: 40.0,
-                  child: const Icon(Icons.location_pin, color: Colors.orange, size: 40),
-                ),
-              ],
-            ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pop(context, selectedLocation);
-        },
-        backgroundColor: const Color(0xFF32CD32),
-        child: const Icon(Icons.check),
       ),
     );
   }

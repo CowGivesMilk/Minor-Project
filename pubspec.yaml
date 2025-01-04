@@ -16,6 +16,8 @@ dependencies:
   geolocator: ^13.0.2 # Latest version of geolocator
   permission_handler: ^11.3.1 # Latest version for permission handling
   cupertino_icons: ^1.0.8
+  flutter_typeahead: ^4.0.0
+  csv: ^5.0.0
   http: ^1.2.2
   excel: ^4.0.6
 
@@ -32,6 +34,7 @@ flutter:
   assets:
     - assets/map.png
     - assets/bus.png
+    - assets/Routes.csv
 
 flutter_icons:
   android: true           # Set to true to generate icons for Android

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:csv/csv.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -12,9 +17,37 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   LatLng? currentLocation;
   LatLng? finalDestination;
-
   final String currentLocationName = "Current Location";
   final String finalDestinationName = "Final Destination";
+  late List<String> locations = []; // List to store unique locations from the CSV file.
+
+  @override
+  void initState() {
+    super.initState();
+    loadLocations(); // Load locations from the CSV file.
+  }
+
+  Future<void> loadLocations() async {
+    try {
+      final csvData = await rootBundle.loadString('assets/Routes.csv');
+      final List<List<dynamic>> rowsAsListOfValues =
+      const CsvToListConverter().convert(csvData);
+
+      // Use a Set to store unique locations
+      final Set<String> uniqueLocations = rowsAsListOfValues
+          .skip(1) // Skip the header row
+          .map((row) => row[0].toString().trim()) // Extract the first column
+          .toSet();
+
+      setState(() {
+        locations = uniqueLocations.toList(); // Convert back to a list
+      });
+
+      print("Unique locations loaded: $locations"); // Debug: Print loaded locations
+    } catch (error) {
+      print('Error loading CSV: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +72,9 @@ class _DashboardState extends State<Dashboard> {
           children: [
             UserAccountsDrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF32CD32)),
-              accountName: const Text(
-                'Nimesh Poudel',
-                style: TextStyle(color: Colors.white),
-              ),
-              accountEmail: const Text(
-                'n@p.com',
-                style: TextStyle(color: Colors.white70),
-              ),
+              accountName:
+              const Text('Nimesh Poudel', style: TextStyle(color: Colors.white)),
+              accountEmail: const Text('n@p.com', style: TextStyle(color: Colors.white70)),
               currentAccountPicture: const CircleAvatar(
                 backgroundImage: AssetImage('assets/profile_picture.png'),
               ),
@@ -91,11 +119,8 @@ class _DashboardState extends State<Dashboard> {
                         point: currentLocation!,
                         width: 40.0,
                         height: 40.0,
-                        child: const Icon(
-                          Icons.location_pin,
-                          color: Colors.blue,
-                          size: 40,
-                        ),
+                        child: const Icon(Icons.location_pin,
+                            color: Colors.blue, size: 40),
                       ),
                     ],
                   ),
@@ -106,11 +131,8 @@ class _DashboardState extends State<Dashboard> {
                         point: finalDestination!,
                         width: 40.0,
                         height: 40.0,
-                        child: const Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
-                        ),
+                        child: const Icon(Icons.location_pin,
+                            color: Colors.red, size: 40),
                       ),
                     ],
                   ),
@@ -197,8 +219,8 @@ class _DashboardState extends State<Dashboard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(
-              'Choose ${locationType == "current" ? "Current Location" : "Final Destination"}'),
+          title:
+          Text('Choose ${locationType == "current" ? "Current Location" : "Final Destination"}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -241,22 +263,41 @@ class _DashboardState extends State<Dashboard> {
                     builder: (context) {
                       return AlertDialog(
                         title: const Text('Enter Location Name'),
-                        content: TextField(
-                          controller: locationSearchController,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter a location name',
+                        content: TypeAheadFormField(
+                          textFieldConfiguration: TextFieldConfiguration(
+                            controller: locationSearchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Type a location name',
+                            ),
                           ),
+                          suggestionsCallback: (pattern) {
+                            final suggestions = locations.where(
+                                  (location) => location
+                                  .toLowerCase()
+                                  .contains(pattern.toLowerCase()),
+                            );
+                            print(
+                                "Suggestions for '$pattern': ${suggestions.toList()}"); // Debugging
+                            return suggestions;
+                          },
+                          itemBuilder: (context, suggestion) {
+                            return ListTile(
+                              title: Text(suggestion),
+                            );
+                          },
+                          onSuggestionSelected: (suggestion) {
+                            Navigator.pop(context);
+                            setState(() {
+                              if (locationType == "current") {
+                                print("Selected Current Location: $suggestion");
+                                // Add logic to convert suggestion to LatLng.
+                              } else {
+                                print("Selected Final Destination: $suggestion");
+                                // Add logic to convert suggestion to LatLng.
+                              }
+                            });
+                          },
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              print("Searched location: ${locationSearchController.text}");
-                              // Logic to convert text into LatLng can go here
-                            },
-                            child: const Text('Search'),
-                          ),
-                        ],
                       );
                     },
                   );
@@ -296,9 +337,8 @@ class _MapPickerState extends State<MapPicker> {
       ),
       body: FlutterMap(
         options: MapOptions(
-          initialCenter: widget.currentLocation ??
-              widget.finalDestination ??
-              LatLng(27.7172, 85.3240),
+          initialCenter:
+          widget.currentLocation ?? widget.finalDestination ?? LatLng(27.7172, 85.3240),
           initialZoom: 15.0,
           onTap: (tapPosition, point) {
             setState(() {
@@ -319,11 +359,7 @@ class _MapPickerState extends State<MapPicker> {
                   point: widget.currentLocation!,
                   width: 40.0,
                   height: 40.0,
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.blue,
-                    size: 40,
-                  ),
+                  child: const Icon(Icons.location_pin, color: Colors.blue, size: 40),
                 ),
               ],
             ),
@@ -334,11 +370,7 @@ class _MapPickerState extends State<MapPicker> {
                   point: widget.finalDestination!,
                   width: 40.0,
                   height: 40.0,
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.red,
-                    size: 40,
-                  ),
+                  child: const Icon(Icons.location_pin, color: Colors.red, size: 40),
                 ),
               ],
             ),
@@ -349,11 +381,7 @@ class _MapPickerState extends State<MapPicker> {
                   point: selectedLocation!,
                   width: 40.0,
                   height: 40.0,
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.orange,
-                    size: 40,
-                  ),
+                  child: const Icon(Icons.location_pin, color: Colors.orange, size: 40),
                 ),
               ],
             ),

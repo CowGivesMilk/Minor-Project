@@ -34,7 +34,8 @@ flutter:
   assets:
     - assets/map.png
     - assets/bus.png
-    - assets/Routes.csv
+    - assets/Routes.csv 
+    - assets/Bus.csv
 
 flutter_icons:
   android: true           # Set to true to generate icons for Android

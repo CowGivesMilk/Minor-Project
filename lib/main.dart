@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dashboard.dart'; // Import the Dashboard page
 import 'sign_in_page.dart';  // Import the SignInPage
 import 'sign_up_page.dart';  // Import the SignUpPage
+import 'driver.dart';        // Import the DriverSignInPage
 
 void main() {
   runApp(const SahayatriApp());
@@ -21,6 +22,7 @@ class SahayatriApp extends StatelessWidget {
         '/signin': (context) => const SignInPage(),
         '/signup': (context) => const SignUpPage(),
         '/dashboard': (context) => const Dashboard(), // Dashboard route
+        '/driver': (context) => const DriverSignInPage(), // Driver sign-in route
       },
       theme: ThemeData(
         primarySwatch: Colors.green,
@@ -39,14 +41,12 @@ class SahayatriHome extends StatefulWidget {
 class _SahayatriHomeState extends State<SahayatriHome> {
   int _tapCount = 0;  // Counter for bus logo taps
 
-  // Handle bus logo tap
   void _handleBusLogoTap() {
     setState(() {
       _tapCount++;
     });
 
     if (_tapCount >= 5) {
-      // Navigate to the Dashboard if clicked 5 times
       Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
@@ -88,9 +88,9 @@ class _SahayatriHomeState extends State<SahayatriHome> {
             ),
             const SizedBox(height: 30),
             GestureDetector(
-              onTap: _handleBusLogoTap,  // Handle tap on the bus logo
+              onTap: _handleBusLogoTap,
               child: Image.asset(
-                'assets/bus.png', // Ensure this path matches your pubspec.yaml
+                'assets/bus.png',
                 height: 200,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
@@ -150,6 +150,34 @@ class _SahayatriHomeState extends State<SahayatriHome> {
                   SizedBox(width: 10),
                   Icon(
                     Icons.arrow_forward,
+                    color: Colors.green,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Sign In as Driver Button
+            OutlinedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/driver');
+              },
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.green),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Sign In as Driver',
+                    style: TextStyle(fontSize: 18, color: Colors.green),
+                  ),
+                  SizedBox(width: 10),
+                  Icon(
+                    Icons.drive_eta,
                     color: Colors.green,
                   ),
                 ],

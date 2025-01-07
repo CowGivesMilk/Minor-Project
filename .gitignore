@@ -54,4 +54,4 @@ linux/.idea/
 .DS_Store
 Thumbs.db
 *.log
-
+.flutter-plugins

@@ -55,6 +55,49 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF32CD32),
         elevation: 0,
+        title: const Text("Dashboard"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              // Show a modal bottom sheet for the menu options
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.home),
+                        title: const Text('Home'),
+                        onTap: () {
+                          Navigator.pushNamed(context, '/'); // Navigate to home
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.settings),
+                        title: const Text('Settings'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Settings clicked')),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: const Text('Log Out'),
+                        onTap: () {
+                          Navigator.pushReplacementNamed(context, '/signin');
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -286,13 +329,19 @@ class MapPicker extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF32CD32),
         title: const Text('Select Location'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Goes back to the previous screen
+          },
+        ),
       ),
       body: FlutterMap(
         options: MapOptions(
           initialCenter: currentLocation ?? finalDestination ?? LatLng(27.7172, 85.3240),
           initialZoom: 15.0,
           onTap: (tapPosition, point) {
-            Navigator.pop(context, point);
+            Navigator.pop(context, point); // Returning selected point back to previous screen
           },
         ),
         children: [

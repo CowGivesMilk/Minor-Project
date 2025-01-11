@@ -39,7 +39,7 @@ class SahayatriHome extends StatefulWidget {
 }
 
 class _SahayatriHomeState extends State<SahayatriHome> {
-  int _tapCount = 0;  // Counter for bus logo taps
+  int _tapCount = 0; // Counter for bus logo taps
 
   void _handleBusLogoTap() {
     setState(() {
@@ -103,7 +103,6 @@ class _SahayatriHomeState extends State<SahayatriHome> {
               ),
             ),
             const SizedBox(height: 50),
-            // Sign In Button
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/signin');
@@ -128,7 +127,6 @@ class _SahayatriHomeState extends State<SahayatriHome> {
               ),
             ),
             const SizedBox(height: 20),
-            // Sign Up Button
             OutlinedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/signup');
@@ -156,7 +154,6 @@ class _SahayatriHomeState extends State<SahayatriHome> {
               ),
             ),
             const SizedBox(height: 20),
-            // Sign In as Driver Button
             OutlinedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/driver');

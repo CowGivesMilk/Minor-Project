@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:csv/csv.dart';
+import 'choice.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -187,6 +188,10 @@ class _DashboardState extends State<Dashboard> {
                       if (currentLocation != null && finalDestination != null) {
                         print(
                             "Journey started from (${currentLocation!.latitude}, ${currentLocation!.longitude}) to (${finalDestination!.latitude}, ${finalDestination!.longitude})");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => BusServicePage()), // Create an instance of BusServicePage
+                        );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

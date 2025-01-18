@@ -86,6 +86,17 @@ class _DashboardState extends State<Dashboard> {
                         },
                       ),
                       ListTile(
+                        leading: const Icon(Icons.history), // Icon for View History
+                        title: const Text('View History'), // Title text
+                        onTap: () {
+                          Navigator.pop(context); // Close the drawer or pop the current context
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('View History clicked')), // Snackbar message
+                          );
+                        },
+                      ),
+
+                      ListTile(
                         leading: const Icon(Icons.logout),
                         title: const Text('Log Out'),
                         onTap: () {

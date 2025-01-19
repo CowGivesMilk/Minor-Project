@@ -5,7 +5,6 @@ import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:csv/csv.dart';
-import 'choice.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -61,49 +60,93 @@ class _DashboardState extends State<Dashboard> {
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
-              // Show a modal bottom sheet for the menu options
+              // Show a drawer from the right side of the screen
               showModalBottomSheet(
                 context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
                 builder: (context) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.home),
-                        title: const Text('Home'),
-                        onTap: () {
-                          Navigator.pushNamed(context, '/'); // Navigate to home
-                        },
+                  return FractionallySizedBox(
+                    heightFactor: 0.6, // Adjusted height factor for a smaller box
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          bottomLeft: Radius.circular(20),
+                        ),
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.settings),
-                        title: const Text('Settings'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Settings clicked')),
-                          );
-                        },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: const [
+                                CircleAvatar(
+                                  radius: 30, // Smaller profile picture
+                                  backgroundImage: AssetImage('assets/profile_picture.png'),
+                                ),
+                                SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'John Doe',
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Smaller font size
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      'john.doe@example.com',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: const Icon(Icons.settings),
+                            title: const Text('Settings'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Settings clicked')),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.history),
+                            title: const Text('View History'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('View History clicked')),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.support),
+                            title: const Text('Support'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Support clicked')),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.logout),
+                            title: const Text('Log Out'),
+                            onTap: () {
+                              Navigator.pushReplacementNamed(context, '/signin');
+                            },
+                          ),
+                        ],
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.history), // Icon for View History
-                        title: const Text('View History'), // Title text
-                        onTap: () {
-                          Navigator.pop(context); // Close the drawer or pop the current context
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('View History clicked')), // Snackbar message
-                          );
-                        },
-                      ),
-
-                      ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: const Text('Log Out'),
-                        onTap: () {
-                          Navigator.pushReplacementNamed(context, '/signin');
-                        },
-                      ),
-                    ],
+                    ),
                   );
                 },
               );
@@ -199,10 +242,6 @@ class _DashboardState extends State<Dashboard> {
                       if (currentLocation != null && finalDestination != null) {
                         print(
                             "Journey started from (${currentLocation!.latitude}, ${currentLocation!.longitude}) to (${finalDestination!.latitude}, ${finalDestination!.longitude})");
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => BusServicePage()), // Create an instance of BusServicePage
-                        );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
